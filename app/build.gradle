@@ -1,24 +1,32 @@
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.0.1"
+    compileSdkVersion 26
 
     defaultConfig {
-        minSdkVersion 8
-        targetSdkVersion 19
+        applicationId "com.imuinfo"
+        minSdkVersion 19
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
+        debug {
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
         release {
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
         }
     }
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:+'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }

@@ -1,33 +1,33 @@
 package com.example.datacapture.app;
 
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
+import android.hardware.Camera;
+import android.hardware.Camera.PictureCallback;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.TextView;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.text.SimpleDateFormat;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-import android.os.Message;
-import android.os.Environment;
-import android.os.Bundle;
-import android.os.Handler;
-
-import android.graphics.PixelFormat;
-import android.support.v7.app.ActionBarActivity;
-import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
-import android.view.View;
-import android.util.Log;
-import android.widget.TextView;
-import android.widget.Button;
-import android.widget.FrameLayout;
-
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     // ------------------------------
 
@@ -37,17 +37,17 @@ public class MainActivity extends ActionBarActivity {
 
     // ---------- 参数设置 ----------
 
-    public static final int maxImageNum      = 50;      // 最多采集图像数量
-    public static final int captureFPS       = 1000;    // 每多少秒采集一张图片
+    public static final int maxImageNum = 50;      // 最多采集图像数量
+    public static final int captureFPS = 1000;    // 每多少秒采集一张图片
     public static final int sensorCaptureFPS = 50;      // 每多少秒采集一次传感器数据
 
-    private int imgWidth  = 1280;
-    private int imgHeight = 960;
+    private int imgWidth = 640;
+    private int imgHeight = 480;
 
     // ---------- 布尔变量 ----------
 
-    public boolean isCapturing          = false;    // 记录相机是否在进行采集
-    public boolean isSensorCapturing    = false;    // 记录传感器是否在进行采集
+    public boolean isCapturing = false;    // 记录相机是否在进行采集
+    public boolean isSensorCapturing = false;    // 记录传感器是否在进行采集
 
     // ---------- 显示元素 ----------
 
@@ -81,7 +81,6 @@ public class MainActivity extends ActionBarActivity {
     private static File dataDir;
 
 
-
     // ---------- 其他变量 ----------
 
     private static final String TAG = "MyActivity";
@@ -95,18 +94,29 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buttonCapture       = (Button) findViewById(R.id.button_capture);
-        buttonStop          = (Button) findViewById(R.id.button_stop);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                    || checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.CAMERA}, 1);
+            } else {
+            }
+        }
+
+        buttonCapture = (Button) findViewById(R.id.button_capture);
+        buttonStop = (Button) findViewById(R.id.button_stop);
         buttonCameraCapture = (Button) findViewById(R.id.button_camera_capture);
-        buttonCameraStop    = (Button) findViewById(R.id.button_camera_stop);
+        buttonCameraStop = (Button) findViewById(R.id.button_camera_stop);
         buttonSensorCapture = (Button) findViewById(R.id.button_sensor_capture);
-        buttonSensorStop    = (Button) findViewById(R.id.button_sensor_stop);
+        buttonSensorStop = (Button) findViewById(R.id.button_sensor_stop);
 
-        accView             = (TextView) findViewById(R.id.acc_xcoor);
-        gyroView            = (TextView) findViewById(R.id.gyro_xcoor);
-        cameraStatus        = (TextView) findViewById(R.id.camera_status);
+        accView = (TextView) findViewById(R.id.acc_xcoor);
+        gyroView = (TextView) findViewById(R.id.gyro_xcoor);
+        cameraStatus = (TextView) findViewById(R.id.camera_status);
 
-        preview = (FrameLayout)findViewById(R.id.camera_preview);
+        preview = (FrameLayout) findViewById(R.id.camera_preview);
 
 
         // Create的时候，首先让stop button不可用
@@ -125,15 +135,14 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void handleMessage(Message msg) {
-                if(msg.what == 0x123){
+                if (msg.what == 0x123) {
                     takeOneShot();
                     imageNum++;
-                }else if(msg.what == 0x124){
+                } else if (msg.what == 0x124) {
                     stop();
                 }
             }
         };
-
 
 
     }
@@ -142,8 +151,7 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onClick(View v) {
-            switch (v.getId())
-            {
+            switch (v.getId()) {
                 case R.id.button_capture:
 
                     init();
@@ -151,12 +159,16 @@ public class MainActivity extends ActionBarActivity {
                     startTimestamp = System.currentTimeMillis();
 
                     timerStop = new Timer();
-                    timerStop.schedule(new stopThread(),new Date(),500);
+                    timerStop.schedule(new stopThread(), new Date(), 500);
 
                     timerCaptureFPS = new Timer();
-                    timerCaptureFPS.schedule(new captureThread(), 1000, captureFPS);
+                    //timerCaptureFPS.schedule(new captureThread(), 1000, captureFPS);
 
-                    acc = new SensorMonitor(v.getContext(),accView,gyroView,startTimestamp,dataDir);
+                    Message msg= new Message();
+                    msg.what=0x123;
+                    handler.sendMessageDelayed(msg,1000);//lijun
+
+                    acc = new SensorMonitor(v.getContext(), accView, gyroView, startTimestamp, dataDir);
                     isSensorCapturing = true;
                     buttonSensorStop.setEnabled(true);
 
@@ -177,7 +189,7 @@ public class MainActivity extends ActionBarActivity {
                     startTimestamp = System.currentTimeMillis();
 
                     timerStop = new Timer();
-                    timerStop.schedule(new stopThread(),new Date(),500);
+                    timerStop.schedule(new stopThread(), new Date(), 500);
 
                     timerCaptureFPS = new Timer();
                     timerCaptureFPS.schedule(new captureThread(), 1000, captureFPS);
@@ -191,7 +203,7 @@ public class MainActivity extends ActionBarActivity {
 
                 case R.id.button_sensor_capture:
 
-                    acc = new SensorMonitor(v.getContext(),accView,gyroView,0,null);
+                    acc = new SensorMonitor(v.getContext(), accView, gyroView, 0, null);
                     isSensorCapturing = true;
                     buttonSensorStop.setEnabled(true);
                     break;
@@ -207,18 +219,18 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    class captureThread extends TimerTask{
+    class captureThread extends TimerTask {
         @Override
         public void run() {
             handler.sendEmptyMessage(0x123);
         }
     }
 
-    class stopThread extends TimerTask{
+    class stopThread extends TimerTask {
         @Override
-        public void run(){
+        public void run() {
 
-            if(imageNum > maxImageNum){
+            if (imageNum > maxImageNum) {
                 handler.sendEmptyMessage(0x124);
                 this.cancel();
             }
@@ -226,7 +238,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    private void init(){
+    private void init() {
 
         mCamera = getCameraInstance();
 
@@ -236,10 +248,9 @@ public class MainActivity extends ActionBarActivity {
         parameters.setPictureFormat(PixelFormat.JPEG);
         parameters.setPictureSize(imgWidth, imgHeight);
 
-        try{
+        try {
             parameters.setSceneMode(Camera.Parameters.SCENE_MODE_ACTION);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             Log.d(TAG, "Error starting action mode: " + e.getMessage());
         }
 
@@ -253,9 +264,9 @@ public class MainActivity extends ActionBarActivity {
 
         imageInfoData = getImgInfoFile();
 
-        try{
+        try {
             imgInfoFOS = new FileOutputStream(imageInfoData);
-        } catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -278,16 +289,16 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
-    private static void createDataDir(){
+    private static void createDataDir() {
 
         String dataFolder = new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date());
         dataDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), dataFolder);
 
-        if (!dataDir.exists()){
-            if (!dataDir.mkdirs()){
+        if (!dataDir.exists()) {
+            if (!dataDir.mkdirs()) {
                 Log.d("MyCameraApp", "failed to create image directory");
-                }
+            }
         }
     }
 
@@ -299,17 +310,21 @@ public class MainActivity extends ActionBarActivity {
 
         cameraCaptureStartTimestamp = System.currentTimeMillis() - startTimestamp;
 
-        if (mCamera != null && !isCapturing)
-        {
-            try
-            {
+        if (mCamera != null && !isCapturing) {
+            try {
+
+                Log.d(TAG,"takepicture0");
                 mCamera.startPreview();
-            } catch (Exception e){
+            } catch (Exception e) {
+
+                Log.d(TAG,"takepicture error1");
                 Log.d(TAG, "Error starting camera preview: " + e.getMessage());
             }
 
             isCapturing = true;
+            Log.d(TAG,"takepicture1");
             mCamera.takePicture(mShutterCallback, null, mPicture);
+            Log.d(TAG,"takepicture2");
 
         }
 
@@ -319,24 +334,22 @@ public class MainActivity extends ActionBarActivity {
 
         long dT = cameraCaptureFinishTimestamp - cameraCaptureStartTimestamp;
 
-        cameraStatus.setText("Camera Status : Image No." + imageNum + "\nCapture lasts for:" + dT + "ms" +"\n onShutterTime:" + onShutterTimestamp);
+        cameraStatus.setText("Camera Status : Image No." + imageNum + "\nCapture lasts for:" + dT + "ms" + "\n onShutterTime:" + onShutterTimestamp);
 
-        try{
+        try {
             imgInfoFOS.write((imageNum + " " + cameraCaptureStartTimestamp + " " + onShutterTimestamp + " " + cameraCaptureFinishTimestamp + "\n").getBytes());
             imgInfoFOS.flush();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
 
 
     private void stop() {
 
-        try{
+        try {
             imgInfoFOS.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -350,19 +363,18 @@ public class MainActivity extends ActionBarActivity {
     protected void onPause() {
         super.onPause();
 
-        if (isSensorCapturing){
+        if (isSensorCapturing) {
             acc.releaseSensor();
         }
 
         releaseCamera();              // release the camera immediately on pause event
     }
 
-    public static Camera getCameraInstance(){
+    public static Camera getCameraInstance() {
         Camera c = null;
         try {
             c = Camera.open(); // attempt to get a Camera instance
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             // Camera is not available (in use or does not exist)
         }
         return c; // returns null if camera is unavailable
@@ -373,50 +385,57 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
 
-            File pictureFile = getOutputMediaFile( );
-
-            if (pictureFile == null){
-                Log.d(TAG, "Error creating media file, check storage permissions: " );
-                return;
-            }
-
+            Log.d(TAG,"takepicture3");
+            File pictureFile = getOutputMediaFile();
             try {
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                fos.write(data);
-                fos.close();
-            } catch (FileNotFoundException e) {
-                Log.d(TAG, "File not found: " + e.getMessage());
-            } catch (IOException e) {
-                Log.d(TAG, "Error accessing file: " + e.getMessage());
+                if (pictureFile == null) {
+                    Log.d(TAG, "Error creating media file, check storage permissions: ");
+                    return;
+                }
+
+                try {
+                    FileOutputStream fos = new FileOutputStream(pictureFile);
+                    fos.write(data);
+                    fos.close();
+                } catch (FileNotFoundException e) {
+                    Log.d(TAG, "File not found: " + e.getMessage());
+                } catch (IOException e) {
+                    Log.d(TAG, "Error accessing file: " + e.getMessage());
+                }
+            }finally {
+
+                Log.d(TAG,"takepicture4");
+                handler.sendEmptyMessage(0x123);//lijun
             }
         }
     };
 
 
+    /**
+     * Create a File for saving an image or video
+     */
+    private static File getOutputMediaFile() {
 
-    /** Create a File for saving an image or video */
-    private static File getOutputMediaFile( ){
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
+        File mediaFile;
 
-            // Create a media file name
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
-            File mediaFile;
-
-                mediaFile = new File(dataDir.getPath() + File.separator +
-                        "IMG_"+ timeStamp + ".jpg");
+        mediaFile = new File(dataDir.getPath() + File.separator +
+                "IMG_" + timeStamp + ".jpg");
 
         return mediaFile;
     }
 
 
-    private void releaseCamera(){
-        if (mCamera != null){
+    private void releaseCamera() {
+        if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.release();        // release the camera for other applications
             mCamera = null;
         }
     }
 
-    private static File getImgInfoFile(){
+    private static File getImgInfoFile() {
 
         File imageInfoFile;
 

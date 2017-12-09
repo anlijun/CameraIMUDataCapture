@@ -2,3 +2,16 @@
 /local.properties
 /.idea/workspace.xml
 .DS_Store
+.gradle/
+.idea/
+.tags
+build/
+reports/
+gradle/
+gradlew
+gradlew.bat
+local.properties
+.externalNativeBuild
+*iml
+*.patch
+proguard-log.pro
