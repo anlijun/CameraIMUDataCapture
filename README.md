@@ -16,4 +16,18 @@ For inertial sensor output capturing:
 
 -------------------------
 
-All datas will be stored at /sdcard/Picture/#yyyyMMdd_HHmm#/
+All datas will be stored at /sdcard/Pictures/#yyyyMMdd_HHmm#/
+
+data format:
+/sdcard/Pictures/#yyyyMMdd_HHmm#/
+IMG_20171208_222448527.jpg
+IMG_20171208_222449313.jpg
+
+ImgInfo.txt
+  index StartTimestamp  ShutterTimestamp  FinishTimestamp
+  0 1008 0 1009
+  1 2002 1405 2003
+
+Sensor.txt
+count acc0  acc1  acc2  accTimestamp  gyro0 gyro1 gyro2 gyroTimestamp rotationVectorMatrix0--rotationVectorMatrix8 rotationTimestamp logTimestamp
+1 -0.043110352 8.58854 4.7397437 523 0.083823875 -0.053404268 -0.042186577 523 0.38409117 -0.4619578 0.7994179 0.92329466 0.19306436 -0.33204386 -9.4884634E-4 0.86563337 0.50067747 516 531
