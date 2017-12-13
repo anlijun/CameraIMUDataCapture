@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -414,14 +415,14 @@ public class MainActivity extends Activity {
     /**
      * Create a File for saving an image or video
      */
-    private static File getOutputMediaFile() {
-
+    private File getOutputMediaFile() {
         // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
+        //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
+        String timeStamp = Long.toString(System.currentTimeMillis()) + "000000";
         File mediaFile;
 
         mediaFile = new File(dataDir.getPath() + File.separator +
-                "IMG_" + timeStamp + ".jpg");
+                timeStamp + ".png");
 
         return mediaFile;
     }

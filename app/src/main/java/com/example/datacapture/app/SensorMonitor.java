@@ -138,7 +138,19 @@ public class SensorMonitor implements SensorEventListener{
         timerSensorCapture.cancel();
     }
 
-    private void saveSensorData(){
+    private void saveSensorData() {
+        try {
+            String timeStamp = Long.toString(System.currentTimeMillis()) + "000000";
+            String tmp = timeStamp + "," + gyroOutput[0] + "," + gyroOutput[1] + "," + gyroOutput[2] + ","
+                    + accOutput[0] + "," + accOutput[1] + "," + accOutput[2];
+            sensorFOS.write((tmp + "\n").getBytes());
+            sensorFOS.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveSensorData_old() {
 
 
         accText.setText("Output #" + count + "\n" + accOutput[0] + " " + accOutput[1] + " " + accOutput[2] + "\n@ time " + accTimestamp + "ms");
