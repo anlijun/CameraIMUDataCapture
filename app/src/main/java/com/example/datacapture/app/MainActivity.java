@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -167,7 +166,7 @@ public class MainActivity extends Activity {
 
                     Message msg= new Message();
                     msg.what=0x123;
-                    handler.sendMessageDelayed(msg,1000);//lijun
+                    handler.sendMessageDelayed(msg,100);//lijun
 
                     acc = new SensorMonitor(v.getContext(), accView, gyroView, startTimestamp, dataDir);
                     isSensorCapturing = true;
@@ -256,6 +255,7 @@ public class MainActivity extends Activity {
         }
 
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED);
+        mCamera.cancelAutoFocus();
 
         mCamera.setParameters(parameters);
 
@@ -303,6 +303,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    private static Boolean mFocused = false;
     private void takeOneShot() {
 
         buttonCapture.setEnabled(false);
@@ -316,6 +317,19 @@ public class MainActivity extends Activity {
 
                 Log.d(TAG,"takepicture0");
                 mCamera.startPreview();
+                if (!mFocused) {
+                    mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                        @Override
+                        public void onAutoFocus(boolean b, Camera camera) {
+                            if (b) {
+                                Log.i(TAG, "### onAutoFocus success ***************** ");
+                                mCamera.cancelAutoFocus();
+                            }
+                        }
+                    });
+                    Thread.sleep(2000);
+                    mFocused = true;
+                }
             } catch (Exception e) {
 
                 Log.d(TAG,"takepicture error1");
