@@ -100,8 +100,8 @@ public class SensorMonitor implements SensorEventListener{
         mSensorManager.registerListener(this, mGyroscope , SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(this, mRotationSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
-        timerSensorCapture = new Timer();
-        timerSensorCapture.schedule(new sensorCaptureThread(), 500, MainActivity.sensorCaptureFPS);
+        //timerSensorCapture = new Timer();
+        //timerSensorCapture.schedule(new sensorCaptureThread(), 500, MainActivity.sensorCaptureFPS);
 
         sensorData = getSensorFile();
 
@@ -116,7 +116,23 @@ public class SensorMonitor implements SensorEventListener{
             startTimestamp = System.currentTimeMillis();
         }
 
-
+        new Thread(){
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                    while (MainActivity.isSensorCapturing) {
+                        Thread.sleep(MainActivity.sensorCaptureFPS);
+                        saveSensorData();
+                    }
+                    sensorFOS.flush();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     class sensorCaptureThread extends TimerTask {
@@ -144,7 +160,7 @@ public class SensorMonitor implements SensorEventListener{
             String tmp = timeStamp + "," + gyroOutput[0] + "," + gyroOutput[1] + "," + gyroOutput[2] + ","
                     + accOutput[0] + "," + accOutput[1] + "," + accOutput[2];
             sensorFOS.write((tmp + "\n").getBytes());
-            sensorFOS.flush();
+            //sensorFOS.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }

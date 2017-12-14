@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
 
     public static final int maxImageNum = 300;      // 最多采集图像数量
     public static final int captureFPS = 1000;    // 每多少秒采集一张图片
-    public static final int sensorCaptureFPS = 50;      // 每多少秒采集一次传感器数据
+    public static final int sensorCaptureFPS = 5;      // 每多少秒采集一次传感器数据
 
     private int imgWidth = 640;
     private int imgHeight = 480;
@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
     // ---------- 布尔变量 ----------
 
     public boolean isCapturing = false;    // 记录相机是否在进行采集
-    public boolean isSensorCapturing = false;    // 记录传感器是否在进行采集
+    public static boolean isSensorCapturing = false;    // 记录传感器是否在进行采集
 
     // ---------- 显示元素 ----------
 
@@ -168,8 +168,8 @@ public class MainActivity extends Activity {
                     msg.what=0x123;
                     handler.sendMessageDelayed(msg,100);//lijun
 
-                    acc = new SensorMonitor(v.getContext(), accView, gyroView, startTimestamp, dataDir);
                     isSensorCapturing = true;
+                    acc = new SensorMonitor(v.getContext(), accView, gyroView, startTimestamp, dataDir);
                     buttonSensorStop.setEnabled(true);
 
                     break;
@@ -233,6 +233,8 @@ public class MainActivity extends Activity {
             if (imageNum > maxImageNum) {
                 handler.sendEmptyMessage(0x124);
                 this.cancel();
+
+                isSensorCapturing = false;
             }
         }
     }
