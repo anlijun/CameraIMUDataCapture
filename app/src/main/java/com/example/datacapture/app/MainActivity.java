@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
 
     // ---------- 参数设置 ----------
 
-    public static final int maxImageNum = 50;      // 最多采集图像数量
+    public static final int maxImageNum = 300;      // 最多采集图像数量
     public static final int captureFPS = 1000;    // 每多少秒采集一张图片
     public static final int sensorCaptureFPS = 50;      // 每多少秒采集一次传感器数据
 
@@ -263,13 +263,13 @@ public class MainActivity extends Activity {
 
         createDataDir();
 
-        imageInfoData = getImgInfoFile();
-
-        try {
-            imgInfoFOS = new FileOutputStream(imageInfoData);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+//        imageInfoData = getImgInfoFile();
+//
+//        try {
+//            imgInfoFOS = new FileOutputStream(imageInfoData);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
 
         cameraStatus.setText("Camera Status : OK");
 
@@ -351,22 +351,22 @@ public class MainActivity extends Activity {
 
         cameraStatus.setText("Camera Status : Image No." + imageNum + "\nCapture lasts for:" + dT + "ms" + "\n onShutterTime:" + onShutterTimestamp);
 
-        try {
-            imgInfoFOS.write((imageNum + " " + cameraCaptureStartTimestamp + " " + onShutterTimestamp + " " + cameraCaptureFinishTimestamp + "\n").getBytes());
-            imgInfoFOS.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            imgInfoFOS.write((imageNum + " " + cameraCaptureStartTimestamp + " " + onShutterTimestamp + " " + cameraCaptureFinishTimestamp + "\n").getBytes());
+//            imgInfoFOS.flush();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 
     private void stop() {
 
-        try {
-            imgInfoFOS.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            imgInfoFOS.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         releaseCamera();
         cameraStatus.setText("End");
@@ -435,7 +435,10 @@ public class MainActivity extends Activity {
         String timeStamp = Long.toString(System.currentTimeMillis()) + "000000";
         File mediaFile;
 
-        mediaFile = new File(dataDir.getPath() + File.separator +
+        String folder = dataDir.getPath() + File.separator
+                + "cam0";
+        new File(folder).mkdirs();
+        mediaFile = new File(folder + File.separator +
                 timeStamp + ".png");
 
         return mediaFile;

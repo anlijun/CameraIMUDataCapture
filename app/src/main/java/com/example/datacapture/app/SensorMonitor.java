@@ -199,8 +199,7 @@ public class SensorMonitor implements SensorEventListener{
 
         File sensorFile;
 
-        sensorFile = new File( sensorDir.getPath() + File.separator +
-                "Sensor.txt");
+        sensorFile = new File(sensorDir.getPath() + File.separator + "imu0.csv");
 
         return sensorFile;
     }
